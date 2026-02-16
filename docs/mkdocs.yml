@@ -293,6 +293,34 @@ plugins:
             - tutorials/deployment/index.md: Production deployment guide
             - tutorials/observability/index.md: Debugging and observability
 
+          # Full Navigation:
+          Full Navigation From Here: []
+          Get Started:
+            - index.md
+          Learn DSPy - Learning DSPy:
+            - learn/index.md
+          Learn DSPy - DSPy Programming:
+            - learn/programming/**.md
+          Learn DSPy - DSPy Evaluation:
+            - learn/evaluation/**.md
+          Learn DSPy - DSPy Optimization:
+            - learn/optimization/**.md
+          # Since we don't have a learn/**.md, future sections within learn/ should be added here
+          # to ensure they show up in the llms.txt navigation
+          Tutorials - Docs:
+            - tutorials/**.md
+          Tutorials - Notebooks:
+            - tutorials/**.ipynb
+          DSPy in Production:
+            - production/index.md
+          Community:
+            - community/**.md
+          FAQ:
+            - faqs.md
+            - cheatsheet.md
+          API Reference:
+            - api/**.md
+
 extra:
     social:
         - icon: fontawesome/brands/github
