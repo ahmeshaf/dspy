@@ -272,27 +272,16 @@ plugins:
             - learn/index.md: Three stages of building AI systems - programming, evaluation, and optimization
           Learn DSPy - DSPy Programming:
             - learn/programming/**.md
-            - learn/programming/overview.md: Programming paradigm and philosophy
-            - learn/programming/language_models.md: Language model interfaces and configuration
-            - learn/programming/signatures.md: Signatures - declarative input/output specifications
-            - learn/programming/modules.md: Modules - composable AI components
           Learn DSPy - DSPy Evaluation:
             - learn/evaluation/**.md
           Learn DSPy - DSPy Optimization:
             - learn/optimization/**.md
-            - learn/optimization/overview.md: Optimization techniques overview
           # Since we don't have a learn/**.md, future sections within learn/ should be added here
           # to ensure they show up in the llms.txt navigation
           Tutorials - Docs:
             - tutorials/**.md
-            - tutorials/classification/index.md: Classification with DSPy
-            - tutorials/optimize_ai_program/index.md: Guide to optimizing AI programs
-            - tutorials/deployment/index.md: Production deployment guide
-            - tutorials/observability/index.md: Debugging and observability
           Tutorials - Notebooks:
             - tutorials/**.ipynb
-            - tutorials/rag/index.ipynb: Retrieval-Augmented Generation (RAG) tutorial
-            - tutorials/agents/index.ipynb: Building AI agents with DSPy
           Community:
             - community/**.md
           FAQ:
