@@ -300,12 +300,6 @@ plugins:
             - cheatsheet.md: DSPy cheatsheet for quick reference
           API Reference:
             - api/**.md
-            - api/modules/Predict.md: Basic prediction module
-            - api/modules/ChainOfThought.md: Chain of thought reasoning
-            - api/modules/ReAct.md: ReAct agent module
-            - api/signatures/Signature.md: Signature system documentation
-            - api/primitives/Example.md: Example primitive for training data
-            - api/optimizers/BootstrapFewShot.md: Bootstrap few-shot optimizer
 
 extra:
     social:
