@@ -173,7 +173,7 @@ async def test_stdio_mcp_tools(server_params):
 
 @pytest.fixture()
 def mcp_proxy_url():
-    """Start mcp-proxy as a subprocess, yield the URL, and tear down on exit."""
+    """Start the MCP server with streamable-http transport and yield the URL."""
     import socket
     import subprocess
     import sys
@@ -185,7 +185,7 @@ def mcp_proxy_url():
 
     url = f"http://127.0.0.1:{port}/mcp"
     proc = subprocess.Popen(
-        ["mcp-proxy", "--port", str(port), "--", sys.executable, "tests/utils/resources/mcp_server.py"],
+        [sys.executable, "tests/utils/resources/mcp_server.py", "--transport", "streamable-http", "--port", str(port)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -197,7 +197,7 @@ def mcp_proxy_url():
             except OSError:
                 time.sleep(0.1)
         else:
-            raise TimeoutError(f"mcp-proxy did not start on port {port}")
+            raise TimeoutError(f"MCP server did not start on port {port}")
         yield url
     finally:
         proc.terminate()
