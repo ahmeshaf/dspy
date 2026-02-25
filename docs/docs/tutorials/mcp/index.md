@@ -293,9 +293,9 @@ create a file named `dspy_mcp_agent.py`, and follow the guide to add code to it.
 ### Gather Tools from MCP Servers
 
 We first need to gather all available tools from the MCP server and make them
-usable by DSPy. DSPy provides `stdio_mcp_tools` which handles the entire MCP session
-lifecycle — connecting, initializing, listing tools, and converting them to
-[`dspy.Tool`](https://dspy.ai/api/primitives/Tool/) objects:
+usable by DSPy. DSPy provides an API [`dspy.Tool`](https://dspy.ai/api/primitives/Tool/)
+as the standard tool interface. The `stdio_mcp_tools` helper handles the entire MCP session
+lifecycle — connecting, initializing, listing tools, and converting them to `dspy.Tool`:
 
 ```python
 from mcp import StdioServerParameters
@@ -305,6 +305,7 @@ from dspy.utils.mcp import stdio_mcp_tools
 server_params = StdioServerParameters(
     command="python",  # Executable
     args=["path_to_your_working_directory/mcp_server.py"],
+    env=None,
 )
 
 async def run():
@@ -318,7 +319,8 @@ if __name__ == "__main__":
     asyncio.run(run())
 ```
 
-With the code above, we have successfully collected all available MCP tools as DSPy tools.
+With the code above, we have successfully collected all available MCP tools and converted
+them to DSPy tools.
 
 
 ### Build a DSPy Agent to Handle Customer Requests
@@ -355,16 +357,15 @@ Then we create the ReAct agent by passing the tools and signature into the `dspy
 put together the complete code script:
 
 ```python
-import asyncio
-
 import dspy
 from mcp import StdioServerParameters
 from dspy.utils.mcp import stdio_mcp_tools
 
 # Create server parameters for stdio connection
 server_params = StdioServerParameters(
-    command="python",
-    args=["path_to_your_working_directory/mcp_server.py"],
+    command="python",  # Executable
+    args=["script_tmp/mcp_server.py"],  # Optional command line arguments
+    env=None,  # Optional environment variables
 )
 
 
@@ -386,12 +387,16 @@ dspy.configure(lm=dspy.LM("openai/gpt-4o-mini"))
 
 async def run(user_request):
     async with stdio_mcp_tools(server_params) as tools:
+        # Create the agent
         react = dspy.ReAct(DSPyAirlineCustomerService, tools=tools)
+
         result = await react.acall(user_request=user_request)
         print(result)
 
 
 if __name__ == "__main__":
+    import asyncio
+
     asyncio.run(run("please help me book a flight from SFO to JFK on 09/01/2025, my name is Adam"))
 ```
 

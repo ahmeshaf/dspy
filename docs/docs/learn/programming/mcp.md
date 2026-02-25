@@ -20,49 +20,15 @@ MCP enables you to:
 
 - **Use standardized tools** - Connect to any MCP-compatible server.
 - **Share tools across stacks** - Use the same tools across different frameworks.
-- **Simplify integration** - Convert MCP tools to DSPy tools with minimal setup.
+- **Simplify integration** - Convert MCP tools to DSPy tools with one line.
 
 DSPy provides `stdio_mcp_tools` and `http_mcp_tools` async context managers that handle the full MCP session lifecycle — connecting, initializing, listing tools, and converting them to `dspy.Tool` objects — so you can focus on building your agent.
 
 ## Using MCP with DSPy
 
-### 1. Stdio Server (Local Process)
+### 1. HTTP Server (Remote)
 
-The most common way to use MCP is with a local server process communicating via stdio:
-
-```python
-import asyncio
-import dspy
-from mcp import StdioServerParameters
-from dspy.utils.mcp import stdio_mcp_tools
-
-async def main():
-    server_params = StdioServerParameters(
-        command="python",
-        args=["path/to/your/mcp_server.py"],
-    )
-
-    async with stdio_mcp_tools(server_params) as tools:
-        class QuestionAnswer(dspy.Signature):
-            """Answer questions using available tools."""
-            question: str = dspy.InputField()
-            answer: str = dspy.OutputField()
-
-        react_agent = dspy.ReAct(
-            signature=QuestionAnswer,
-            tools=tools,
-            max_iters=5,
-        )
-
-        result = await react_agent.acall(question="What is 25 + 17?")
-        print(result.answer)
-
-asyncio.run(main())
-```
-
-### 2. HTTP Server (Remote)
-
-For remote MCP servers over streamable HTTP:
+For remote MCP servers over HTTP, use the streamable HTTP transport:
 
 ```python
 import asyncio
@@ -70,7 +36,9 @@ import dspy
 from dspy.utils.mcp import http_mcp_tools
 
 async def main():
+    # Connect to HTTP MCP server
     async with http_mcp_tools("http://localhost:8000/mcp") as tools:
+        # Create and use ReAct agent
         class TaskSignature(dspy.Signature):
             task: str = dspy.InputField()
             result: str = dspy.OutputField()
@@ -84,6 +52,45 @@ async def main():
         result = await react_agent.acall(task="Check the weather in Tokyo")
         print(result.result)
 
+asyncio.run(main())
+```
+
+### 2. Stdio Server (Local Process)
+
+The most common way to use MCP is with a local server process communicating via stdio:
+
+```python
+import asyncio
+import dspy
+from mcp import StdioServerParameters
+from dspy.utils.mcp import stdio_mcp_tools
+
+async def main():
+    # Configure the stdio server
+    server_params = StdioServerParameters(
+        command="python",                    # Command to run
+        args=["path/to/your/mcp_server.py"], # Server script path
+    )
+
+    # Connect to the server
+    async with stdio_mcp_tools(server_params) as tools:
+        # Create a ReAct agent with the tools
+        class QuestionAnswer(dspy.Signature):
+            """Answer questions using available tools."""
+            question: str = dspy.InputField()
+            answer: str = dspy.OutputField()
+
+        react_agent = dspy.ReAct(
+            signature=QuestionAnswer,
+            tools=tools,
+            max_iters=5,
+        )
+
+        # Use the agent
+        result = await react_agent.acall(question="What is 25 + 17?")
+        print(result.answer)
+
+# Run the async function
 asyncio.run(main())
 ```
 
