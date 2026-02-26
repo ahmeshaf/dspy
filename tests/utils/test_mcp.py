@@ -130,7 +130,8 @@ async def test_stdio_mcp_tools(server_params):
         names = [t.name for t in tools]
         assert "add" in names
         assert "hello" in names
-        assert await tools[0].acall(a=1, b=2) == "3"
+        add_tool = next(t for t in tools if t.name == "add")
+        assert await add_tool.acall(a=1, b=2) == "3"
 
     # include_tools: only the specified tool is returned
     async with stdio_mcp_tools(server_params, include_tools=["add"]) as tools:
@@ -162,6 +163,10 @@ async def test_stdio_mcp_tools(server_params):
         assert err and "Tool names not found on MCP server" in str(err)
 
     # exclude_tools with unknown name raises ValueError
+    # NOTE: Currently unknown exclude_tools names raise ValueError.
+    # This may be too strict — consider using warnings.warn instead so callers
+    # can maintain a static exclusion list without needing to keep it in sync
+    # with the server's exact tool set.
     try:
         async with stdio_mcp_tools(server_params, exclude_tools=["nonexistent"]) as _:
             pass
@@ -212,7 +217,8 @@ async def test_http_mcp_tools(mcp_proxy_url):
         names = [t.name for t in tools]
         assert "add" in names
         assert "hello" in names
-        assert await tools[0].acall(a=1, b=2) == "3"
+        add_tool = next(t for t in tools if t.name == "add")
+        assert await add_tool.acall(a=1, b=2) == "3"
 
     # include_tools: only the specified tool is returned
     async with http_mcp_tools(mcp_proxy_url, include_tools=["add"]) as tools:
@@ -235,6 +241,10 @@ async def test_http_mcp_tools(mcp_proxy_url):
         assert err and "Tool names not found on MCP server" in str(err)
 
     # exclude_tools with unknown name raises ValueError
+    # NOTE: Currently unknown exclude_tools names raise ValueError.
+    # This may be too strict — consider using warnings.warn instead so callers
+    # can maintain a static exclusion list without needing to keep it in sync
+    # with the server's exact tool set.
     try:
         async with http_mcp_tools(mcp_proxy_url, exclude_tools=["nonexistent"]) as _:
             pass
