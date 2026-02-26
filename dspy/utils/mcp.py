@@ -8,6 +8,8 @@ from dspy.adapters.types.tool import Tool, convert_input_schema_to_tool_args
 if TYPE_CHECKING:
     import mcp
 
+__all__ = ["stdio_mcp_tools", "http_mcp_tools", "convert_mcp_tool"]
+
 
 def _convert_mcp_tool_result(call_tool_result: mcp.types.CallToolResult) -> str | list[Any]:
     from mcp.types import TextContent
@@ -76,6 +78,26 @@ def _filter_mcp_tools(
     return tools
 
 
+async def _build_tools_from_session(
+    session: mcp.ClientSession,
+    include_tools: list[str] | None,
+    exclude_tools: list[str] | None,
+) -> list[Tool]:
+    """Initialize a session, list tools, validate names, filter, and convert.
+
+    Shared helper used by both stdio_mcp_tools and http_mcp_tools to avoid
+    duplicating the session setup logic.
+    """
+    await session.initialize()
+    listed = await session.list_tools()
+    # Use `is not None` rather than truthiness so that an empty list ([]) is
+    # handled correctly and not silently treated as "no filter specified".
+    requested = include_tools if include_tools is not None else exclude_tools
+    _validate_tool_names(requested, [t.name for t in listed.tools])
+    filtered = _filter_mcp_tools(listed.tools, include_tools, exclude_tools)
+    return [convert_mcp_tool(session, t) for t in filtered]
+
+
 @asynccontextmanager
 async def stdio_mcp_tools(
     server_params: mcp.StdioServerParameters,
@@ -116,11 +138,7 @@ async def stdio_mcp_tools(
     read_timeout = timedelta(seconds=timeout) if timeout is not None else None
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write, read_timeout_seconds=read_timeout) as session:
-            await session.initialize()
-            listed = await session.list_tools()
-            _validate_tool_names(include_tools or exclude_tools, [t.name for t in listed.tools])
-            filtered = _filter_mcp_tools(listed.tools, include_tools, exclude_tools)
-            yield [convert_mcp_tool(session, t) for t in filtered]
+            yield await _build_tools_from_session(session, include_tools, exclude_tools)
 
 
 @asynccontextmanager
@@ -160,10 +178,8 @@ async def http_mcp_tools(
     from mcp.client.streamable_http import streamable_http_client
 
     read_timeout = timedelta(seconds=timeout) if timeout is not None else None
+    # Note: timeout is applied as read_timeout_seconds to ClientSession only.
+    # streamable_http_client does not currently expose a connection-level timeout parameter.
     async with streamable_http_client(url) as (read, write, _):
         async with ClientSession(read, write, read_timeout_seconds=read_timeout) as session:
-            await session.initialize()
-            listed = await session.list_tools()
-            _validate_tool_names(include_tools or exclude_tools, [t.name for t in listed.tools])
-            filtered = _filter_mcp_tools(listed.tools, include_tools, exclude_tools)
-            yield [convert_mcp_tool(session, t) for t in filtered]
+            yield await _build_tools_from_session(session, include_tools, exclude_tools)
